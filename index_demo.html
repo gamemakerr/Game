@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Between Us (Demo)</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="theme-color" content="#c71515">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #c71515;
+      color: white;
+      text-align: center;
+    }
+    .header {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+    .header img {
+      height: 48px;
+    }
+    h1 {
+      font-size: 36px;
+      margin: 0;
+    }
+    select, button {
+      margin: 10px 5px;
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      color: #c71515;
+      background: white;
+    }
+    .question-box {
+      margin: 20px auto;
+      max-width: 600px;
+      background: white;
+      color: #c71515;
+      font-size: 24px;
+      padding: 20px;
+      border-radius: 10px;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .history {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #fff;
+      color: #c71515;
+      border-radius: 8px;
+      padding: 15px;
+      display: none;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="icon-192.png" alt="Logo">
+    <h1>Between Us</h1>
+  </div>
+  <div>
+    <select id="lang">
+      <option value="pl">PL</option>
+      <option value="en" selected>EN</option>
+      <option value="de">DE</option>
+    </select>
+    <select id="category">
+      <option value="mix">Mix</option>
+      <option value="Pytanie">Pytanie</option>
+      <option value="Fantazja">Fantazja</option>
+      <option value="Zrób to">Zrób to</option>
+      <option value="Wyznanie">Wyznanie</option>
+    </select>
+    <br>
+    <button onclick="drawCard()" id="drawBtn">Draw Card</button>
+    <button onclick="toggleHistory()" id="historyBtn">Show History</button>
+    <button onclick="resetGame()" id="resetBtn">Reset</button>
+  </div>
+  <div class="question-box" id="questionBox">Click "Draw Card" to begin</div>
+  <div class="history" id="historyBox"></div>
+
+  <script>
+    let cards = [];
+    let used = [];
+    let currentLang = 'en';
+    let currentCategory = 'mix';
+    let currentCard = null;
+    let historyVisible = false;
+
+    const texts = {
+      draw: { pl: "Losuj kartę", en: "Draw Card", de: "Karte ziehen" },
+      show: { pl: "Pokaż historię", en: "Show History", de: "Verlauf anzeigen" },
+      hide: { pl: "Ukryj historię", en: "Hide History", de: "Verlauf ausblenden" },
+      reset: { pl: "Zacznij od nowa", en: "Reset", de: "Zurücksetzen" },
+      start: { pl: "Kliknij 'Losuj kartę', aby zacząć", en: "Click 'Draw Card' to begin", de: "Klicke auf 'Karte ziehen', um zu starten" },
+      none: { pl: "Brak więcej kart!", en: "No more cards!", de: "Keine weiteren Karten!" }
+    };
+
+    fetch('cards_multilang_demo.json')
+      .then(res => res.json())
+      .then(data => {
+        cards = data;
+        updateUI();
+      });
+
+    document.getElementById('lang').onchange = e => {
+      currentLang = e.target.value;
+      updateUI();
+    };
+
+    document.getElementById('category').onchange = e => {
+      currentCategory = e.target.value;
+    };
+
+    function updateUI() {
+      document.getElementById('drawBtn').innerText = texts.draw[currentLang];
+      document.getElementById('resetBtn').innerText = texts.reset[currentLang];
+      document.getElementById('historyBtn').innerText = historyVisible ? texts.hide[currentLang] : texts.show[currentLang];
+      document.getElementById('questionBox').innerText = currentCard ? currentCard[currentLang] : texts.start[currentLang];
+    }
+
+    function drawCard() {
+      const pool = cards.filter(c =>
+        (currentCategory === 'mix' || c.category === currentCategory) &&
+        !used.includes(c.pl)
+      );
+      if (pool.length === 0) {
+        document.getElementById('questionBox').innerText = texts.none[currentLang];
+        return;
+      }
+      currentCard = pool[Math.floor(Math.random() * pool.length)];
+      used.push(currentCard.pl);
+      updateUI();
+    }
+
+    function toggleHistory() {
+      historyVisible = !historyVisible;
+      const box = document.getElementById('historyBox');
+      const btn = document.getElementById('historyBtn');
+      box.style.display = historyVisible ? 'block' : 'none';
+      box.innerHTML = used.map(q => {
+        const card = cards.find(c => c.pl === q);
+        return `<div>• ${card[currentLang]}</div>`;
+      }).join('');
+      updateUI();
+    }
+
+    function resetGame() {
+      used = [];
+      currentCard = null;
+      historyVisible = false;
+      document.getElementById('historyBox').innerHTML = '';
+      document.getElementById('historyBox').style.display = 'none';
+      updateUI();
+    }
+  </script>
+</body>
+</html>
