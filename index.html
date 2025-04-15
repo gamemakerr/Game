@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Between Us</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="theme-color" content="#c71515">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff;
+      color: #000;
+    }
+    .header {
+      background-color: #c71515;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      text-align: center;
+    }
+    .question-box {
+      margin-top: 20px;
+      font-size: 24px;
+      padding: 20px;
+      border: 2px solid #c71515;
+      border-radius: 10px;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    select, button {
+      margin: 10px 5px;
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .history {
+      text-align: left;
+      margin-top: 20px;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Between Us</h1>
+    <select id="lang">
+      <option value="pl">PL</option>
+      <option value="en" selected>EN</option>
+      <option value="de">DE</option>
+    </select>
+    <select id="category">
+      <option value="mix">Mix</option>
+      <option value="Pytanie">Pytanie</option>
+      <option value="Fantazja">Fantazja</option>
+      <option value="Zrób to">Zrób to</option>
+      <option value="Wyznanie">Wyznanie</option>
+    </select>
+  </div>
+  <div class="container">
+    <button onclick="drawCard()">Draw Card</button>
+    <button onclick="showHistory()">Show History</button>
+    <button onclick="resetGame()">Reset</button>
+    <div class="question-box" id="questionBox">Click "Draw Card" to begin</div>
+    <div class="history" id="historyBox" style="display:none;"></div>
+  </div>
+  <script>
+    let cards = [];
+    let used = [];
+    let currentLang = 'en';
+    let currentCategory = 'mix';
+
+    fetch('cards_multilang.json')
+      .then(res => res.json())
+      .then(data => cards = data);
+
+    document.getElementById('lang').onchange = e => {
+      currentLang = e.target.value;
+    };
+
+    document.getElementById('category').onchange = e => {
+      currentCategory = e.target.value;
+    };
+
+    function drawCard() {
+      const pool = cards.filter(c => 
+        (currentCategory === 'mix' || c.category === currentCategory) &&
+        !used.includes(c[currentLang])
+      );
+      if (pool.length === 0) {
+        document.getElementById('questionBox').innerText = 'No more cards!';
+        return;
+      }
+      const card = pool[Math.floor(Math.random() * pool.length)];
+      used.push(card[currentLang]);
+      document.getElementById('questionBox').innerText = card[currentLang];
+    }
+
+    function showHistory() {
+      const box = document.getElementById('historyBox');
+      box.style.display = 'block';
+      box.innerHTML = used.map(q => `<div>• ${q}</div>`).join('');
+    }
+
+    function resetGame() {
+      used = [];
+      document.getElementById('questionBox').innerText = 'Click "Draw Card" to begin';
+      document.getElementById('historyBox').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
