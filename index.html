@@ -217,7 +217,31 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('gameProgress');
     }
   });
+let usedIndexes = JSON.parse(localStorage.getItem('usedIndexes')) || [];
+    let lastCard = localStorage.getItem('lastCard');
 
+    const cardDisplay = document.getElementById('cardDisplay');
+    const drawBtn = document.getElementById('drawBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    if (lastCard) {
+      cardDisplay.textContent = lastCard;
+    }
+
+    drawBtn.onclick = () => {
+      if (usedIndexes.length >= cards.length) {
+        cardDisplay.textContent = "No more cards!";
+        return;
+      }
+      let index;
+      do {
+        index = Math.floor(Math.random() * cards.length);
+      } while (usedIndexes.includes(index));
+      usedIndexes.push(index);
+      localStorage.setItem('usedIndexes', JSON.stringify(usedIndexes));
+      localStorage.setItem('lastCard', cards[index]);
+      cardDisplay.textContent = cards[index];
+    };
    resetBtn.onclick = () => {
       if (confirm("Czy na pewno chcesz zresetować grę?")) {
         localStorage.removeItem('usedIndexes');
