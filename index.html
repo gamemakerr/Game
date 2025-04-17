@@ -88,6 +88,22 @@
   <div class="history" id="historyBox"></div>
 
   <script>
+    const STORAGE_KEY = 'betweenus_drawn_cards';
+  let drawnCards = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+  function saveDrawnCard(cardId) {
+    drawnCards.push(cardId);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(drawnCards));
+  }
+
+  function isCardDrawn(cardId) {
+    return drawnCards.includes(cardId);
+  }
+
+  function resetDrawnCards() {
+    drawnCards = [];
+    localStorage.removeItem(STORAGE_KEY);
+  }
     let cards = [];
     let used = [];
     let currentLang = 'en';
@@ -129,18 +145,28 @@
     }
 
     function drawCard() {
-      const pool = cards.filter(c =>
-        (currentCategory === 'mix' || c.category === currentCategory) &&
-        !used.includes(c.pl)
-      );
-      if (pool.length === 0) {
-        document.getElementById('questionBox').innerText = texts.none[currentLang];
-        return;
-      }
-      currentCard = pool[Math.floor(Math.random() * pool.length)];
-      used.push(currentCard.pl);
-      updateUI();
-    }
+  const selectedLang = languageSelect.value;
+  const selectedCategory = categorySelect.value;
+
+  const availableCards = cards.filter(card => 
+    !isCardDrawn(card.id) &&
+    (selectedCategory === 'Mixed' || card.category[selectedLang] === selectedCategory)
+  );
+
+  if (availableCards.length === 0) {
+    cardText.textContent = translations[selectedLang].noMoreCards;
+    return;
+  }
+
+  const randomIndex = Math.floor(Math.random() * availableCards.length);
+  const card = availableCards[randomIndex];
+
+  currentCard = card;
+  updateCardText();
+  saveDrawnCard(card.id);
+  updateHistory(card);
+}
+
 
     function toggleHistory() {
       historyVisible = !historyVisible;
@@ -154,14 +180,16 @@
 
     }
 
-    function resetGame() {
-      used = [];
-      currentCard = null;
-      historyVisible = false;
-      document.getElementById('historyBox').innerHTML = '';
-      document.getElementById('historyBox').style.display = 'none';
-      updateUI();
-    }
+   function resetGame() {
+  used = [];
+  currentCard = null;
+  historyVisible = false;
+  localStorage.removeItem('betweenus_drawn_cards');
+  document.getElementById('historyBox').innerHTML = '';
+  document.getElementById('historyBox').style.display = 'none';
+  updateUI();
+}
+
   
     const categoryTranslations = {'mix': {'pl': 'Mix', 'en': 'Mix', 'de': 'Mix'}, 'Pytanie': {'pl': 'Pytanie', 'en': 'Question', 'de': 'Frage'}, 'Fantazja': {'pl': 'Fantazja', 'en': 'Fantasy', 'de': 'Fantasie'}, 'Zrób to': {'pl': 'Zrób to', 'en': 'Do it', 'de': 'Mach es'}, 'Wyznanie': {'pl': 'Wyznanie', 'en': 'Confession', 'de': 'Geständnis'}};
 
