@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Between Us</title>
+  <link rel="manifest" href="manifest.json" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js');
+      });
+    }
+  </script>
+  <style>
+    body { font-family: sans-serif; background: #A4252E; color: white; text-align: center; padding: 2em; }
+    button { margin: 1em; padding: 1em 2em; font-size: 1.2em; background: white; color: #A4252E; border: none; border-radius: 0.5em; cursor: pointer; }
+    .card { margin-top: 2em; font-size: 1.5em; }
+  </style>
+</head>
+<body>
+  <h1>Between Us 🔥</h1>
+  <div>
+    <button id="drawBtn">Draw Card</button>
+    <button id="resetBtn">Reset Game</button>
+  </div>
+  <div class="card" id="cardDisplay">Click "Draw Card" to begin!</div>
+
+  <script>
+    const cards = [
+      "Jakie pytanie boisz się mi zadać?",
+      "Co jest dla Ciebie definicją zdrady?",
+      "Jakie miejsce poza sypialnią najbardziej Cię kusi?",
+      "Pocałuj mnie tak, jakbyśmy mieli się zobaczyć dopiero za miesiąc."
+    ];
+
+    let usedIndexes = JSON.parse(localStorage.getItem('usedIndexes')) || [];
+    let lastCard = localStorage.getItem('lastCard');
+
+    const cardDisplay = document.getElementById('cardDisplay');
+    const drawBtn = document.getElementById('drawBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    if (lastCard) {
+      cardDisplay.textContent = lastCard;
+    }
+
+    drawBtn.onclick = () => {
+      if (usedIndexes.length >= cards.length) {
+        cardDisplay.textContent = "No more cards!";
+        return;
+      }
+      let index;
+      do {
+        index = Math.floor(Math.random() * cards.length);
+      } while (usedIndexes.includes(index));
+      usedIndexes.push(index);
+      localStorage.setItem('usedIndexes', JSON.stringify(usedIndexes));
+      localStorage.setItem('lastCard', cards[index]);
+      cardDisplay.textContent = cards[index];
+    };
+
+    resetBtn.onclick = () => {
+      if (confirm("Czy na pewno chcesz zresetować grę?")) {
+        localStorage.removeItem('usedIndexes');
+        localStorage.removeItem('lastCard');
+        usedIndexes = [];
+        cardDisplay.textContent = "Click 'Draw Card' to begin!";
+      }
+    };
+  </script>
+</body>
+</html>
