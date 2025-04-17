@@ -218,14 +218,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  resetBtn.addEventListener('click', () => {
-    const confirmation = confirm("Czy na pewno chcesz zresetować grę?");
-    if (confirmation) {
-      localStorage.removeItem('gameProgress');
-      currentIndex = 0;
-      showQuestion();
-    }
-  });
+   resetBtn.onclick = () => {
+      if (confirm("Czy na pewno chcesz zresetować grę?")) {
+        localStorage.removeItem('usedIndexes');
+        localStorage.removeItem('lastCard');
+        usedIndexes = [];
+        cardDisplay.textContent = "Click 'Draw Card' to begin!";
+      }
+    };
 
   loadProgress();
 });
