@@ -74,10 +74,10 @@
     </select>
     <select id="category">
       <option value="mix">Mix</option>
-      <option value="Pytanie">Pytanie</option>
-      <option value="Fantazja">Fantazja</option>
-      <option value="Zrób to">Zrób to</option>
-      <option value="Wyznanie">Wyznanie</option>
+      <option value="Pytanie">Question</option>
+      <option value="Fantazja">Fantasy</option>
+      <option value="Zrób to">Do it</option>
+      <option value="Wyznanie">Confession</option>
     </select>
     <br>
     <button onclick="drawCard()" id="drawBtn">Draw Card</button>
@@ -104,7 +104,7 @@
       none: { pl: "Brak więcej kart!", en: "No more cards!", de: "Keine weiteren Karten!" }
     };
 
-    fetch('cards_multilang_demo.json')
+    fetch('cards_multilang.json')
       .then(res => res.json())
       .then(data => {
         cards = data;
